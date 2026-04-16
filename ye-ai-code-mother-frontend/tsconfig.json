@@ -1,4 +1,12 @@
 {
+  "compilerOptions": {
+    // ... 其他已有配置保持不变
+    "baseUrl": ".", // 必须配置，指定根目录
+    "paths": {
+      "@/*": ["src/*"] // 关键：告诉TS @/* 对应 src/* 目录
+    }
+  },
+  "include": ["src/**/*.ts", "src/**/*.d.ts", "src/**/*.tsx", "src/**/*.vue"],
   "files": [],
   "references": [
     {

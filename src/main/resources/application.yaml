@@ -1,10 +1,20 @@
 spring:
   application:
     name: ye-ai-code-mother-backend
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/ye_ai_code_mother
+    username: root
+    password: Aa123666
+  profiles:
+    active: local
 server:
   port: 8126
   servlet:
     context-path: /api
+    session:
+      cookie:
+        path: /api
 #springdoc-openapi
 springdoc:
   group-configs:
