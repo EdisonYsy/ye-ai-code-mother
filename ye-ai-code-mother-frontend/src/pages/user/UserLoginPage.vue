@@ -1,7 +1,7 @@
 <template>
   <div id="userLoginPage">
     <h2 class="title">鱼皮 AI 应用生成 - 用户登录</h2>
-    <div class="desc">不写一行代码,生成完整应用</div>
+    <div class="desc">不写一行代码，生成完整应用</div>
     <a-form :model="formState" name="basic" autocomplete="off" @finish="handleSubmit">
       <a-form-item name="userAccount" :rules="[{ required: true, message: '请输入账号' }]">
         <a-input v-model:value="formState.userAccount" placeholder="请输入账号" />
@@ -25,23 +25,29 @@
     </a-form>
   </div>
 </template>
+
 <script setup lang="ts">
-import { reactive } from 'vue'
 import { useRouter } from 'vue-router'
+import { useLoginUserStore } from '@/stores/loginUser.ts'
+import { userLogin } from '@/api/userController.ts'
 import { message } from 'ant-design-vue'
-import { useLoginUserStore } from '@/stores/loginUser'
-import { userLogin } from '@/api/userController'
-import { listUserVoByPage } from '@/api/userController'
+import { reactive } from 'vue'
+
+const router = useRouter()
+const loginUserStore = useLoginUserStore()
 
 const formState = reactive<API.UserLoginRequest>({
   userAccount: '',
   userPassword: '',
 })
-const router = useRouter()
-const loginUserStore = useLoginUserStore()
 
+/**
+ * 提交表单
+ * @param values
+ */
 const handleSubmit = async (values: any) => {
   const res = await userLogin(values)
+  // 登录成功，把登录态保存到全局状态中
   if (res.data.code === 0 && res.data.data) {
     await loginUserStore.fetchLoginUser()
     message.success('登录成功')
@@ -54,10 +60,13 @@ const handleSubmit = async (values: any) => {
   }
 }
 </script>
-<style>
+
+<style scoped>
 #userLoginPage {
-  max-width: 360px;
-  margin: 0 auto;
+  background: white;
+  max-width: 720px;
+  padding: 24px;
+  margin: 24px auto;
 }
 
 .title {

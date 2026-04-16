@@ -4,7 +4,9 @@ import com.mybatisflex.core.query.QueryWrapper;
 import com.mybatisflex.core.service.IService;
 import com.ye.yeaicodemother.model.dto.app.AppQueryRequest;
 import com.ye.yeaicodemother.model.entity.App;
+import com.ye.yeaicodemother.model.entity.User;
 import com.ye.yeaicodemother.model.vo.AppVO;
+import reactor.core.publisher.Flux;
 
 import java.util.List;
 
@@ -14,6 +16,18 @@ import java.util.List;
  * @author <a href="https://github.com/EdsionYsy">叶盛源</a>
  */
 public interface AppService extends IService<App> {
+
+    /**
+     * 通过对话生成应用代码
+     * @param appId 应用ID
+     * @param message 用户提示词
+     * @param loginUser 当前用户
+     * @return SSE响应内容
+     */
+    public Flux<String> chatToGenCode(Long appId, String message, User loginUser);
+
+    public String deployApp(Long appId,User loginUser);
+
     /**
      * 根据app查询关联信息
      * @param app
@@ -34,4 +48,5 @@ public interface AppService extends IService<App> {
      * @return 分页查询器
      */
     public QueryWrapper getQueryWrapper(AppQueryRequest appQueryRequest);
+
 }
