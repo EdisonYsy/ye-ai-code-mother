@@ -33,4 +33,15 @@ class AiCodeGeneratorFacadeTest {
         String completeResult = String.join("", result);
         Assertions.assertNotNull(completeResult);
     }
+
+    @Test
+    void generateVueProjectCodeStream(){
+        Flux<String> codeStream = aiCodeGeneratorFacade.generateAndSaveCodeStream(
+                "简单的个人博客网站,代码总量不超过200行",CodeGenTypeEnum.VUE_PROJECT,1L
+        );
+        List<String> result = codeStream.collectList().block();
+        Assertions.assertNotNull(result);
+        String completeResult = String.join("", result);
+        Assertions.assertNotNull(completeResult);
+    }
 }
