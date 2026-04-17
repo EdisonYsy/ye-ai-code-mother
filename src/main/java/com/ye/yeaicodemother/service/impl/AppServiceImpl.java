@@ -9,6 +9,7 @@ import com.mybatisflex.core.query.QueryWrapper;
 import com.mybatisflex.spring.service.impl.ServiceImpl;
 import com.ye.yeaicodemother.constant.AppConstant;
 import com.ye.yeaicodemother.core.AiCodeGeneratorFacade;
+import com.ye.yeaicodemother.core.handler.StreamHandlerExecutor;
 import com.ye.yeaicodemother.exception.BusinessException;
 import com.ye.yeaicodemother.exception.ErrorCode;
 import com.ye.yeaicodemother.exception.ThrowUtils;
@@ -25,6 +26,7 @@ import com.ye.yeaicodemother.service.ChatHistoryService;
 import com.ye.yeaicodemother.service.UserService;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 
@@ -55,6 +57,9 @@ public class AppServiceImpl extends ServiceImpl<AppMapper, App>  implements AppS
     @Resource
     private ChatHistoryService chatHistoryService;
 
+    @Resource
+    private StreamHandlerExecutor streamHandlerExecutor;
+
     @Override
     public Flux<String> chatToGenCode(Long appId, String message, User loginUser) {
         // 1.参数校验
@@ -77,26 +82,8 @@ public class AppServiceImpl extends ServiceImpl<AppMapper, App>  implements AppS
         chatHistoryService.addChatMessage(appId, message, ChatHistoryMessageTypeEnum.USER.getValue(), loginUser.getId());
         // 6. 调用 AI 生成代码（流式）
         Flux<String> contentFlux = aiCodeGeneratorFacade.generateAndSaveCodeStream(message, codeGenTypeEnum, appId);
-        // 7. 收集AI响应内容并在完成后记录到对话历史
-        StringBuilder aiResponseBuilder = new StringBuilder();
-        return contentFlux
-                .map(chunk -> {
-                    // 收集AI响应内容
-                    aiResponseBuilder.append(chunk);
-                    return chunk;
-                })
-                .doOnComplete(() -> {
-                    // 流式响应完成后，添加AI消息到对话历史
-                    String aiResponse = aiResponseBuilder.toString();
-                    if (StrUtil.isNotBlank(aiResponse)) {
-                        chatHistoryService.addChatMessage(appId, aiResponse, ChatHistoryMessageTypeEnum.AI.getValue(), loginUser.getId());
-                    }
-                })
-                .doOnError(error -> {
-                    // 如果AI回复失败，也要记录错误消息
-                    String errorMessage = "AI回复失败: " + error.getMessage();
-                    chatHistoryService.addChatMessage(appId, errorMessage, ChatHistoryMessageTypeEnum.AI.getValue(), loginUser.getId());
-                });
+        // 7. 收集AI响应内容并在完成后记录到对话历史 - 利用流处理执行器根据代码不同类型 html ｜ vue 选择不同处理器来处理数据 返回前端以及保存数据库
+        return streamHandlerExecutor.doExecute(contentFlux,chatHistoryService,appId,loginUser,codeGenTypeEnum);
     }
 
 
