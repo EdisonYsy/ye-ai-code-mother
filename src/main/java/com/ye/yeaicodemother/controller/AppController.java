@@ -336,6 +336,7 @@ public class AppController {
         if (!oldApp.getUserId().equals(loginUser.getId()) && !UserConstant.ADMIN_ROLE.equals(loginUser.getUserRole())) {
             throw new BusinessException(ErrorCode.NO_AUTH_ERROR);
         }
+        // 删除应用 - 同时删除对话历史
         boolean result = appService.removeById(id);
         return ResultUtils.success(result);
     }

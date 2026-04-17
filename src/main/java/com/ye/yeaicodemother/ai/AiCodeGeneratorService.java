@@ -2,7 +2,9 @@ package com.ye.yeaicodemother.ai;
 
 import com.ye.yeaicodemother.ai.model.HtmlCodeResult;
 import com.ye.yeaicodemother.ai.model.MultiFileCodeResult;
+import dev.langchain4j.service.MemoryId;
 import dev.langchain4j.service.SystemMessage;
+import dev.langchain4j.service.UserMessage;
 import reactor.core.publisher.Flux;
 
 public interface AiCodeGeneratorService {

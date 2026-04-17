@@ -1,11 +1,21 @@
 spring:
   application:
     name: ye-ai-code-mother-backend
+  # session配置
+  session:
+    store-type: redis
+    timeout: 2592000
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://localhost:3306/ye_ai_code_mother
     username: root
     password: Aa123666
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      password:
+      ttl: 3600
   profiles:
     active: local
 server:
@@ -15,6 +25,7 @@ server:
     session:
       cookie:
         path: /api
+        max-age: 2592000
 #springdoc-openapi
 springdoc:
   group-configs:

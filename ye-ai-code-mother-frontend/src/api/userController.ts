@@ -100,10 +100,7 @@ export async function userLogout(options?: { [key: string]: any }) {
 }
 
 /** 此处后端没有提供注释 POST /user/register */
-export async function userRegister(
-  body: API.UserRegisterRequest,
-  options?: { [key: string]: any }
-) {
+export async function register(body: API.UserRegisterRequest, options?: { [key: string]: any }) {
   return request<API.BaseResponseLong>('/user/register', {
     method: 'POST',
     headers: {
@@ -112,6 +109,18 @@ export async function userRegister(
     data: body,
     ...(options || {}),
   })
+}
+
+/**
+ * 兼容旧命名：用户注册
+ * - 页面里使用的是 `userRegister`
+ * - openapi 生成的是 `register`
+ */
+export async function userRegister(
+  body: API.UserRegisterRequest,
+  options?: { [key: string]: any }
+) {
+  return register(body, options)
 }
 
 /** 此处后端没有提供注释 POST /user/update */
