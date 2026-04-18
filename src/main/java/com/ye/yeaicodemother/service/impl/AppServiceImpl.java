@@ -9,6 +9,7 @@ import com.mybatisflex.core.query.QueryWrapper;
 import com.mybatisflex.spring.service.impl.ServiceImpl;
 import com.ye.yeaicodemother.constant.AppConstant;
 import com.ye.yeaicodemother.core.AiCodeGeneratorFacade;
+import com.ye.yeaicodemother.core.builder.VueProjectBuilder;
 import com.ye.yeaicodemother.core.handler.StreamHandlerExecutor;
 import com.ye.yeaicodemother.exception.BusinessException;
 import com.ye.yeaicodemother.exception.ErrorCode;
@@ -23,10 +24,10 @@ import com.ye.yeaicodemother.model.vo.AppVO;
 import com.ye.yeaicodemother.model.vo.UserVO;
 import com.ye.yeaicodemother.service.AppService;
 import com.ye.yeaicodemother.service.ChatHistoryService;
+import com.ye.yeaicodemother.service.ScreenshotService;
 import com.ye.yeaicodemother.service.UserService;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 
@@ -59,6 +60,11 @@ public class AppServiceImpl extends ServiceImpl<AppMapper, App>  implements AppS
 
     @Resource
     private StreamHandlerExecutor streamHandlerExecutor;
+
+    @Resource
+    private VueProjectBuilder vueProjectBuilder;
+
+
 
     @Override
     public Flux<String> chatToGenCode(Long appId, String message, User loginUser) {
@@ -214,26 +220,65 @@ public class AppServiceImpl extends ServiceImpl<AppMapper, App>  implements AppS
         String sourceDirPath = AppConstant.CODE_OUTPUT_ROOT_DIR + File.separator + sourceDirName;
         // 6.检查源目录是否 存在 是否文件已生成
         File sourceDir = new File(sourceDirPath);
-        if(!sourceDir.exists() || !sourceDir.isDirectory()){
-            // 目录不存在 或 非目录
-            throw new BusinessException(ErrorCode.SYSTEM_ERROR,"应用代码不存在,请先生成代码!");
+        if (!sourceDir.exists() || !sourceDir.isDirectory()) {
+            throw new BusinessException(ErrorCode.SYSTEM_ERROR, "应用代码不存在，请先生成代码");
         }
-        // 7.复制文件到部署目录
+        // 7. Vue 项目特殊处理：执行构建
+        CodeGenTypeEnum codeGenTypeEnum = CodeGenTypeEnum.getEnumByValue(codeGenType);
+        if (codeGenTypeEnum == CodeGenTypeEnum.VUE_PROJECT) {
+            // Vue 项目需要构建
+            boolean buildSuccess = vueProjectBuilder.buildProject(sourceDirPath);
+            ThrowUtils.throwIf(!buildSuccess, ErrorCode.SYSTEM_ERROR, "Vue 项目构建失败，请检查代码和依赖");
+            // 检查 dist 目录是否存在
+            File distDir = new File(sourceDirPath, "dist");
+            ThrowUtils.throwIf(!distDir.exists(), ErrorCode.SYSTEM_ERROR, "Vue 项目构建完成但未生成 dist 目录");
+            // 将 dist 目录作为部署源
+            sourceDir = distDir;
+            log.info("Vue 项目构建成功，将部署 dist 目录: {}", distDir.getAbsolutePath());
+        }
+        // 8.复制文件到部署目录
         String deployDirPath = AppConstant.CODE_DEPLOY_ROOT_DIR + File.separator + deployKey;
         try{
             FileUtil.copyContent(sourceDir,new File(deployDirPath),true);
         }catch (Exception e){
             throw new BusinessException(ErrorCode.SYSTEM_ERROR,"部署失败:" + e.getMessage());
         }
-        // 8.更新应用到deployKey和部署时间数据
+        // 9.更新应用到deployKey和部署时间数据
         App updateApp = new App();
         updateApp.setId(appId);
         updateApp.setDeployKey(deployKey);
         updateApp.setDeployedTime(LocalDateTime.now());
         boolean updateResult = this.updateById(updateApp);
         ThrowUtils.throwIf(!updateResult,ErrorCode.OPERATION_ERROR,"更新应用部署信息失败");
-        // 9.返回可以访问的URL地址
-        return String.format("%s/%s/",AppConstant.CODE_DEPLOY_HOST,deployKey);
+        // 10.返回可以访问的URL地址
+        String appDeployUrl = String.format("%s/%s/",AppConstant.CODE_DEPLOY_HOST,deployKey);
+        // 11.异步根据部署的地址打开网站截图并保存文件到本地目录并存储到cos对象存储中
+        generateAppScreenshotAsync(appId,appDeployUrl);
+        return appDeployUrl;
+    }
+
+    @Resource
+    private ScreenshotService screenshotService;
+
+    /**
+     * 异步生成应用截图并更新封面
+     *
+     * @param appId  应用ID
+     * @param appUrl 应用访问URL
+     */
+    @Override
+    public void generateAppScreenshotAsync(Long appId, String appUrl) {
+        // 使用虚拟线程异步执行
+        Thread.startVirtualThread(() -> {
+            // 调用截图服务生成截图并上传
+            String screenshotUrl = screenshotService.generateAndUploadScreenshot(appUrl);
+            // 更新应用封面字段
+            App updateApp = new App();
+            updateApp.setId(appId);
+            updateApp.setCover(screenshotUrl);
+            boolean updated = this.updateById(updateApp);
+            ThrowUtils.throwIf(!updated, ErrorCode.OPERATION_ERROR, "更新应用封面字段失败");
+        });
     }
 
 }

@@ -49,4 +49,5 @@ public interface AppService extends IService<App> {
      */
     public QueryWrapper getQueryWrapper(AppQueryRequest appQueryRequest);
 
+    void generateAppScreenshotAsync(Long appId, String appUrl);
 }
