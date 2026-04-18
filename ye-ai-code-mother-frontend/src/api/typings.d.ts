@@ -142,15 +142,15 @@ declare namespace API {
     id?: number
   }
 
+  type downloadAppCodeParams = {
+    appId: number
+  }
+
   type getAppVOByIdByAdminParams = {
     id: number
   }
 
   type getAppVOByIdParams = {
-    id: number
-  }
-
-  type getInfoParams = {
     id: number
   }
 
@@ -197,10 +197,6 @@ declare namespace API {
     optimizeCountQuery?: boolean
   }
 
-  type pageParams = {
-    page: PageChatHistory
-  }
-
   type PageUserVO = {
     records?: UserVO[]
     pageNumber?: number
@@ -208,10 +204,6 @@ declare namespace API {
     totalPage?: number
     totalRow?: number
     optimizeCountQuery?: boolean
-  }
-
-  type removeParams = {
-    id: number
   }
 
   type ServerSentEventString = true
