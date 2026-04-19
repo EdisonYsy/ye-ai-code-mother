@@ -21,7 +21,7 @@ class CodeGenWorkflowTest {
 
     @Test
     void testCorporateWorkflow() {
-        WorkflowContext result = new CodeGenWorkflow().executeWorkflow("创建企业官网，展示公司形象和业务介绍");
+        WorkflowContext result = new CodeGenWorkflow().executeWorkflow("创建企业官网，展示公司形象和业务介绍,代码行数不超过200行");
         Assertions.assertNotNull(result);
         System.out.println("生成类型: " + result.getGenerationType());
         System.out.println("生成的代码目录: " + result.getGeneratedCodeDir());
@@ -39,7 +39,7 @@ class CodeGenWorkflowTest {
 
     @Test
     void testSimpleHtmlWorkflow() {
-        WorkflowContext result = new CodeGenWorkflow().executeWorkflow("创建一个简单的个人主页");
+        WorkflowContext result = new CodeGenWorkflow().executeWorkflow("创建一个简单的个人主页,代码量不要超过100行");
         Assertions.assertNotNull(result);
         System.out.println("生成类型: " + result.getGenerationType());
         System.out.println("生成的代码目录: " + result.getGeneratedCodeDir());

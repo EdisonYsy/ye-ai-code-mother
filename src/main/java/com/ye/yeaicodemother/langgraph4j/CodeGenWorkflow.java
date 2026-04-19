@@ -2,13 +2,17 @@ package com.ye.yeaicodemother.langgraph4j;
 
 import com.ye.yeaicodemother.exception.BusinessException;
 import com.ye.yeaicodemother.exception.ErrorCode;
+import com.ye.yeaicodemother.langgraph4j.model.entity.QualityResult;
 import com.ye.yeaicodemother.langgraph4j.node.*;
 import com.ye.yeaicodemother.langgraph4j.state.WorkflowContext;
+import com.ye.yeaicodemother.model.enums.CodeGenTypeEnum;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.hc.core5.http.impl.nio.MessageState;
 import org.bsc.langgraph4j.CompiledGraph;
 import org.bsc.langgraph4j.GraphRepresentation;
 import org.bsc.langgraph4j.GraphStateException;
 import org.bsc.langgraph4j.NodeOutput;
+import org.bsc.langgraph4j.action.AsyncEdgeAction;
 import org.bsc.langgraph4j.prebuilt.MessagesState;
 import org.bsc.langgraph4j.prebuilt.MessagesStateGraph;
 
@@ -19,7 +23,26 @@ import static org.bsc.langgraph4j.StateGraph.START;
 
 @Slf4j
 public class CodeGenWorkflow {
+    private String routeAfterQualityCheck(MessagesState<String> state){
+        WorkflowContext context =WorkflowContext.getContext(state);
+        QualityResult qualityResult = context.getQualityResult();
+        if(qualityResult == null || !qualityResult.getIsValid()){
+            log.error("代码质检失败,需要重新生成项目代码");
+            return "fail";
+        }
+        log.info("代码质检通过,继续后续流程");
+        return routeBuildOrSkip(state);
+    }
 
+    private String routeBuildOrSkip(MessagesState<String> state){
+        WorkflowContext context = WorkflowContext.getContext(state);
+        CodeGenTypeEnum codeGenTypeEnum = context.getGenerationType();
+        if(codeGenTypeEnum == CodeGenTypeEnum.HTML || codeGenTypeEnum == CodeGenTypeEnum.MULTI_FILE){
+            return "skip_build";
+        }else{
+            return "build";
+        }
+    }
     /**
      * 创建完整的工作流
      */
@@ -31,6 +54,7 @@ public class CodeGenWorkflow {
                     .addNode("prompt_enhancer", PromptEnhancerNode.create())
                     .addNode("router", RouterNode.create())
                     .addNode("code_generator", CodeGeneratorNode.create())
+                    .addNode("code_quality_check",CodeQualityCheckNode.create())
                     .addNode("project_builder", ProjectBuilderNode.create())
 
                     // 添加边
@@ -38,7 +62,15 @@ public class CodeGenWorkflow {
                     .addEdge("image_collector", "prompt_enhancer")
                     .addEdge("prompt_enhancer", "router")
                     .addEdge("router", "code_generator")
-                    .addEdge("code_generator", "project_builder")
+                    .addEdge("code_generator","code_quality_check")
+                    .addConditionalEdges("code_quality_check",
+                            AsyncEdgeAction.edge_async(this::routeAfterQualityCheck),
+                            Map.of(
+                                    "build","project_builder",
+                                    "skip_build",END,
+                                    "fail","code_generator"
+                            )
+                    )
                     .addEdge("project_builder", END)
 
                     // 编译工作流
