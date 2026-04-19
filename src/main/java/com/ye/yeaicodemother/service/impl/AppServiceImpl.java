@@ -8,6 +8,8 @@ import cn.hutool.core.util.StrUtil;
 import com.mybatisflex.core.query.QueryWrapper;
 import com.mybatisflex.spring.service.impl.ServiceImpl;
 import com.ye.yeaicodemother.ai.AiCodeGenTypeRoutingService;
+import com.ye.yeaicodemother.ai.AiCodeGenTypeRoutingServiceFactory;
+import com.ye.yeaicodemother.ai.AiCodeGeneratorService;
 import com.ye.yeaicodemother.constant.AppConstant;
 import com.ye.yeaicodemother.core.AiCodeGeneratorFacade;
 import com.ye.yeaicodemother.core.builder.VueProjectBuilder;
@@ -68,7 +70,7 @@ public class AppServiceImpl extends ServiceImpl<AppMapper, App>  implements AppS
 
 
     @Resource
-    private AiCodeGenTypeRoutingService aiCodeGenTypeRoutingService;
+    private AiCodeGenTypeRoutingServiceFactory aiCodeGenTypeRoutingServiceFactory;
 
     @Override
     public Long createApp(AppAddRequest appAddRequest, User loginUser) {
@@ -76,6 +78,7 @@ public class AppServiceImpl extends ServiceImpl<AppMapper, App>  implements AppS
         String initPrompt = appAddRequest.getInitPrompt();
         ThrowUtils.throwIf(StrUtil.isBlank(initPrompt), ErrorCode.PARAMS_ERROR, "初始化 prompt 不能为空");
         // 构造入库对象
+        AiCodeGenTypeRoutingService aiCodeGenTypeRoutingService = aiCodeGenTypeRoutingServiceFactory.createAiCodeGenTypeRoutingService();
         App app = new App();
         BeanUtil.copyProperties(appAddRequest, app);
         app.setUserId(loginUser.getId());
