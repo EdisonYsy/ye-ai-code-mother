@@ -18,6 +18,8 @@ import com.ye.yeaicodemother.model.dto.app.*;
 import com.ye.yeaicodemother.model.entity.User;
 import com.ye.yeaicodemother.model.enums.CodeGenTypeEnum;
 import com.ye.yeaicodemother.model.vo.AppVO;
+import com.ye.yeaicodemother.ratelimit.annotation.RateLimit;
+import com.ye.yeaicodemother.ratelimit.enums.RateLimitType;
 import com.ye.yeaicodemother.service.ProjectDownloadService;
 import com.ye.yeaicodemother.service.UserService;
 import jakarta.annotation.Resource;
@@ -65,6 +67,7 @@ public class AppController {
      * @param request 请求对象
      * @return 生成结果流
      */
+    @RateLimit(limitType = RateLimitType.USER,rate = 5,rateInterval = 60,message="AI对话请求过于频繁,请稍后再试.")
     @GetMapping(value = "/chat/gen/code", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public Flux<ServerSentEvent<String>> chatToGenCode(@RequestParam Long appId,
                                       @RequestParam String message,

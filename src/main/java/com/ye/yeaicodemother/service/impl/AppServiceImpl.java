@@ -26,13 +26,20 @@ import com.ye.yeaicodemother.model.enums.ChatHistoryMessageTypeEnum;
 import com.ye.yeaicodemother.model.enums.CodeGenTypeEnum;
 import com.ye.yeaicodemother.model.vo.AppVO;
 import com.ye.yeaicodemother.model.vo.UserVO;
+import com.ye.yeaicodemother.ratelimit.annotation.RateLimit;
+import com.ye.yeaicodemother.ratelimit.enums.RateLimitType;
 import com.ye.yeaicodemother.service.AppService;
 import com.ye.yeaicodemother.service.ChatHistoryService;
 import com.ye.yeaicodemother.service.ScreenshotService;
 import com.ye.yeaicodemother.service.UserService;
 import jakarta.annotation.Resource;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.MediaType;
+import org.springframework.http.codec.ServerSentEvent;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import reactor.core.publisher.Flux;
 
 import java.io.File;
@@ -93,6 +100,7 @@ public class AppServiceImpl extends ServiceImpl<AppMapper, App>  implements AppS
         log.info("应用创建成功，ID: {}, 类型: {}", app.getId(), selectedCodeGenType.getValue());
         return app.getId();
     }
+
 
 
     @Override
