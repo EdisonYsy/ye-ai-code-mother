@@ -1,12 +1,12 @@
 package com.ye.yeaicodeuser.aop;
 
-import com.ye.yeaicodeuser.annotation.AuthCheck;
-import com.ye.yeaicodeuser.exception.BusinessException;
-import com.ye.yeaicodeuser.exception.ErrorCode;
+import com.ye.yeaicodemother.annotation.AuthCheck;
+import com.ye.yeaicodemother.exception.BusinessException;
+import com.ye.yeaicodemother.exception.ErrorCode;
 
 import com.ye.yeaicodeuser.service.UserService;
-import com.ye.yeaimodel.model.entity.User;
-import com.ye.yeaimodel.model.enums.UserRoleEnum;
+import com.ye.yeaicodemother.model.entity.User;
+import com.ye.yeaicodemother.model.enums.UserRoleEnum;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletRequest;
 import org.aspectj.lang.ProceedingJoinPoint;

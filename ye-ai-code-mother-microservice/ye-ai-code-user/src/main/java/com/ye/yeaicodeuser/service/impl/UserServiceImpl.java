@@ -5,16 +5,16 @@ import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
 import com.mybatisflex.core.query.QueryWrapper;
 import com.mybatisflex.spring.service.impl.ServiceImpl;
-import com.ye.yeaicodeuser.exception.BusinessException;
-import com.ye.yeaicodeuser.exception.ErrorCode;
+import com.ye.yeaicodemother.exception.BusinessException;
+import com.ye.yeaicodemother.exception.ErrorCode;
 import com.ye.yeaicodeuser.mapper.UserMapper;
 
 import com.ye.yeaicodeuser.service.UserService;
-import com.ye.yeaimodel.model.dto.user.UserQueryRequest;
-import com.ye.yeaimodel.model.entity.User;
-import com.ye.yeaimodel.model.enums.UserRoleEnum;
-import com.ye.yeaimodel.model.vo.LoginUserVO;
-import com.ye.yeaimodel.model.vo.UserVO;
+import com.ye.yeaicodemother.model.dto.user.UserQueryRequest;
+import com.ye.yeaicodemother.model.entity.User;
+import com.ye.yeaicodemother.model.enums.UserRoleEnum;
+import com.ye.yeaicodemother.model.vo.LoginUserVO;
+import com.ye.yeaicodemother.model.vo.UserVO;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.util.DigestUtils;
@@ -24,7 +24,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static com.ye.yeaicodeuser.constant.UserConstant.USER_LOGIN_STATE;
+import static com.ye.yeaicodemother.constant.UserConstant.USER_LOGIN_STATE;
 
 /**
  * 用户 服务层实现。

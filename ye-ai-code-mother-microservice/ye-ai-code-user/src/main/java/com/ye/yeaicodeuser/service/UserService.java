@@ -3,10 +3,10 @@ package com.ye.yeaicodeuser.service;
 import com.mybatisflex.core.query.QueryWrapper;
 import com.mybatisflex.core.service.IService;
 
-import com.ye.yeaimodel.model.dto.user.UserQueryRequest;
-import com.ye.yeaimodel.model.entity.User;
-import com.ye.yeaimodel.model.vo.LoginUserVO;
-import com.ye.yeaimodel.model.vo.UserVO;
+import com.ye.yeaicodemother.model.dto.user.UserQueryRequest;
+import com.ye.yeaicodemother.model.entity.User;
+import com.ye.yeaicodemother.model.vo.LoginUserVO;
+import com.ye.yeaicodemother.model.vo.UserVO;
 import jakarta.servlet.http.HttpServletRequest;
 
 import java.util.List;
