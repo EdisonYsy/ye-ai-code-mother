@@ -12,7 +12,6 @@
         <module>ye-ai-code-common</module>
         <module>ye-ai-code-model</module>
         <module>ye-ai-code-client</module>
-        <module>ye-ai-code-user</module>
         <module>ye-ai-code-app</module>
         <module>ye-ai-code-ai</module>
         <module>ye-ai-code-screenshot</module>
