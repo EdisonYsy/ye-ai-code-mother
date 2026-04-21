@@ -1,6 +1,6 @@
 package com.ye.yeaimodel.model.dto.user;
 
-import com.ye.yeaicodemother.common.PageRequest;
+import com.ye.yeaicodeuser.common.PageRequest;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
