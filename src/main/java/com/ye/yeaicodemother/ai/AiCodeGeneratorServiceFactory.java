@@ -2,6 +2,8 @@ package com.ye.yeaicodemother.ai;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
+import com.ye.yeaicodemother.ai.guuardrail.PromptSafetyInputGuardrail;
+import com.ye.yeaicodemother.ai.guuardrail.RetryOutputGuardrail;
 import com.ye.yeaicodemother.ai.tools.*;
 import com.ye.yeaicodemother.exception.BusinessException;
 import com.ye.yeaicodemother.exception.ErrorCode;
@@ -43,8 +45,6 @@ public class AiCodeGeneratorServiceFactory {
     @Resource
     private ChatHistoryService chatHistoryService;
 
-    @Resource
-    private StreamingChatModel reasoningStreamingChatModel;
 
     @Resource
     private ToolManager toolManager;
@@ -109,6 +109,8 @@ public class AiCodeGeneratorServiceFactory {
                         .streamingChatModel(reasoningStreamingChatModel)
                         .chatMemoryProvider(memoryId -> chatMemory)
                         .tools(toolManager.getAllTools())
+                        .inputGuardrails(new PromptSafetyInputGuardrail()) // 添加输入护轨
+//                        .outputGuardrails(new RetryOutputGuardrail()) // 添加输出护轨
                         .hallucinatedToolNameStrategy(toolExecutionRequest -> ToolExecutionResultMessage.from(
                                 toolExecutionRequest, "Error: there is no tool called " + toolExecutionRequest.name()
                         ))

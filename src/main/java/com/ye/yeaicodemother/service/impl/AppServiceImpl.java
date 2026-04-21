@@ -26,6 +26,8 @@ import com.ye.yeaicodemother.model.enums.ChatHistoryMessageTypeEnum;
 import com.ye.yeaicodemother.model.enums.CodeGenTypeEnum;
 import com.ye.yeaicodemother.model.vo.AppVO;
 import com.ye.yeaicodemother.model.vo.UserVO;
+import com.ye.yeaicodemother.monitor.MonitorContext;
+import com.ye.yeaicodemother.monitor.MonitorContextHolder;
 import com.ye.yeaicodemother.ratelimit.annotation.RateLimit;
 import com.ye.yeaicodemother.ratelimit.enums.RateLimitType;
 import com.ye.yeaicodemother.service.AppService;
@@ -123,10 +125,22 @@ public class AppServiceImpl extends ServiceImpl<AppMapper, App>  implements AppS
         }
         // 5. 通过校验后，添加用户消息到对话历史
         chatHistoryService.addChatMessage(appId, message, ChatHistoryMessageTypeEnum.USER.getValue(), loginUser.getId());
-        // 6. 调用 AI 生成代码（流式）
+        // 6.Prometheus监控 - 引入监控上下文
+        MonitorContextHolder.setContext(
+                MonitorContext.builder()
+                        .userId(loginUser.getId().toString())
+                        .appId(appId.toString())
+                        .build()
+        );
+        // 7. 调用 AI 生成代码（流式）
         Flux<String> contentFlux = aiCodeGeneratorFacade.generateAndSaveCodeStream(message, codeGenTypeEnum, appId);
-        // 7. 收集AI响应内容并在完成后记录到对话历史 - 利用流处理执行器根据代码不同类型 html ｜ vue 选择不同处理器来处理数据 返回前端以及保存数据库
-        return streamHandlerExecutor.doExecute(contentFlux,chatHistoryService,appId,loginUser,codeGenTypeEnum);
+        // 8. 收集AI响应内容并在完成后记录到对话历史 - 利用流处理执行器根据代码不同类型 html ｜ vue 选择不同处理器来处理数据 返回前端以及保存数据库
+        return streamHandlerExecutor
+                .doExecute(contentFlux,chatHistoryService,appId,loginUser,codeGenTypeEnum)
+                .doFinally(signalType -> {
+                    // 响应流结束时 清理上下文
+                    MonitorContextHolder.clearContext();
+                });
     }
 
 

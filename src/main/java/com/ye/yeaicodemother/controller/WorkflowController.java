@@ -20,7 +20,7 @@ public class WorkflowController {
 
     }
 
-    @PostMapping("/execute")
+    @PostMapping("/execute-flux")
     public Flux<String> executeWorkflowWithFlux(@RequestParam String prompt){
         log.info("收到Flux工作流执行请求:{}",prompt);
         return new CodeGenWorkflow().executeWorkflowWithFlux(prompt);
